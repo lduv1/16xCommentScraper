@@ -24,13 +24,17 @@ var consentListPath = "consent.csv"
 //
 //
 //
+
+//array of consenting students
 var consentList = [];
 
+//read file
 var consentRaw = fs.readFileSync(consentListPath).toString();
+
+//parse string to array with only the first column (Name must match Canvas)
 $.csv.toArrays(consentRaw, {}, function(err, data) {
     for(var i=0, len=data.length; i<len; i++) {
         consentList.push(data[i][0])
-        //console.log(data[i]);
     }
 });
 
