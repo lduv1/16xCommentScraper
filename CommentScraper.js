@@ -1,18 +1,53 @@
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 var fs = require('fs');
+var $ = jQuery = require('jquery');
+require('jquery-csv');
 
 //put your access token in to a file called token.txt and put it in the same directory
 var token = fs.readFileSync("token.txt");
 var xhttp = new XMLHttpRequest();
 
-
-//TO ADD: submission author ID, commenter's critique grade, read in csv and filter non-consenting students
-
-
-
 //specific to how our courses are named, used to filter courses to reduce runtime
 var term = "F2016"
 var classNum = "161"
+
+var consentListPath = "consent.csv"
+
+//TO ADD: commenter's critique grade
+
+//
+//
+//
+//
+//          Consenting student list input and checking
+//
+//
+//
+//
+var consentList = [];
+
+var consentRaw = fs.readFileSync(consentListPath).toString();
+$.csv.toArrays(consentRaw, {}, function(err, data) {
+    for(var i=0, len=data.length; i<len; i++) {
+        consentList.push(data[i][0])
+        //console.log(data[i]);
+    }
+});
+
+console.log(consentList);
+
+
+
+//
+//
+//
+//
+//          API calls and file output
+//
+//
+//
+//
+
 
 
 //make a file CLASSNUM-TERM.txt
@@ -21,7 +56,7 @@ var stream = fs.createWriteStream(classNum +"-"+ term+".txt");
 stream.once('open', function(fd){
 
     //deliminating with ` because nobody uses it
-    stream.write("Commenter Name`Comment`Submission Grade`Comment Word Length`nth Comment\n")
+    stream.write("Commenter Name`Comment`Submission Grade`Comment Word Length`Submission Author ID`nth Comment\n")
 
     var url = "https://oregonstate.instructure.com/api/v1/";
     //limited to 100 courses per request, only 10 by default,
@@ -94,9 +129,10 @@ stream.once('open', function(fd){
                                         }
                                     }
                                     wordCount++;
-
-                                    //write this line to the file
-                                    stream.write(comment.author_name + "`\"" + contents + "\"`" +submission.score + "`" + wordCount + "`" + numPrevComments +"\n" );
+                                    if(consentList.includes(comment.author_name)){
+                                        //write this line to the file
+                                        stream.write(comment.author_name + "`\"" + contents + "\"`" +submission.score + "`" + wordCount + "`" + submission.user_id + "`" + numPrevComments +"\n" );
+                                    }
                                 }
 
                             });
