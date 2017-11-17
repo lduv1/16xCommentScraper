@@ -38,7 +38,7 @@ $.csv.toArrays(consentRaw, {}, function(err, data) {
     }
 });
 
-console.log(consentList);
+//console.log(consentList);
 
 
 
@@ -111,30 +111,32 @@ stream.once('open', function(fd){
                             //for each comment
                             submission.submission_comments.forEach(function(comment){
 
-                                //filter out TA and submitter comments
+                                //filter out TA and submitter comments, also check if the author's name is in the consent list
                                 if(comment.author_id != submission.grader_id && comment.author_id != submission.user_id){
-                                    //add comment author id to array
-                                    commenterIDs.push(comment.author_id);
-
-                                    //regular expression to replace all new lines and carriage returns
-                                    var contents = comment.comment.replace(/(\r\n|\n|\r)/gm,"");
-
-                                    //the number of previous comments this commenter submitted
-                                    var numPrevComments = 0;
-                                    for(var i = 0; i < commenterIDs.length; i++){
-                                        if(commenterIDs[i] == comment.author_id) numPrevComments++;
-                                    }
-
-                                    //basic wordcount
-                                    var wordCount = 0;
-                                    for (var i = 1; i < comment.comment.length; i++){
-                                        if (comment.comment[i] == " " && comment.comment[i-1] != " ") {
-                                            wordCount++;
-                                        }
-                                    }
-                                    wordCount++;
                                     if(consentList.includes(comment.author_name)){
-                                        //write this line to the file
+
+                                        //regular expression to replace all new lines and carriage returns
+                                        var contents = comment.comment.replace(/(\r\n|\n|\r)/gm,"");
+
+                                        //add comment author id to array, used to calculate previous comments
+                                        commenterIDs.push(comment.author_id);
+
+                                        //the number of previous comments this commenter submitted
+                                        var numPrevComments = 0;
+                                        for(var i = 0; i < commenterIDs.length; i++){
+                                            if(commenterIDs[i] == comment.author_id) numPrevComments++;
+                                        }
+
+                                        //basic wordcount
+                                        var wordCount = 0;
+                                        for (var i = 1; i < comment.comment.length; i++){
+                                            if (comment.comment[i] == " " && comment.comment[i-1] != " ") {
+                                                wordCount++;
+                                            }
+                                        }
+                                        wordCount++;
+
+                                        //write to the file
                                         stream.write(comment.author_name + "`\"" + contents + "\"`" +submission.score + "`" + wordCount + "`" + submission.user_id + "`" + numPrevComments +"\n" );
                                     }
                                 }
@@ -149,4 +151,3 @@ stream.once('open', function(fd){
     //close file
     stream.end();
 });
-//take the submission_comments object, take the author and comment values and store them somewhere
