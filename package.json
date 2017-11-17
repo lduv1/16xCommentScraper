@@ -6,6 +6,7 @@
   "dependencies": {
     "fs": "^0.0.1-security",
     "jquery": "^3.2.1",
+    "jquery-csv": "^0.8.3",
     "json": "^9.0.6",
     "request": "^2.83.0",
     "xmlhttprequest": "^1.8.0"
